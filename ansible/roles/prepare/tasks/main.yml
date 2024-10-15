@@ -1,0 +1,27 @@
+---
+- name: add repo
+  ansible.builtin.apt_repository:
+    repo: deb [trusted=yes] https://mirror.yandex.ru/mirrors/elastic/8/ stable main
+    state: present
+  tags:
+    - prepare
+
+- name: tz setting
+  ansible.builtin.copy:
+    src: /usr/share/zoneinfo/Europe/Moscow
+    dest: /etc/localtime
+    remote_src: yes
+  tags:
+    - prepare
+
+- name: update
+  apt:
+    update_cache=yes cache_valid_time=3600
+  tags:
+    - prepare
+
+- name: install ntp
+  ansible.builtin.apt:
+    pkg:
+    - ntp
+    - ntpdate

@@ -1,0 +1,32 @@
+---
+- hosts: all
+  become: true
+  gather_facts: true
+
+  roles:
+    - prepare
+
+- hosts: log
+  become: true
+  gather_facts: true
+
+  roles:
+    - log
+
+
+- hosts: web
+  become: true
+  gather_facts: true
+
+  roles:
+    - web
+
+
+- hosts: elk
+  become: true
+  gather_facts: true
+
+
+  roles:
+    - elk
+

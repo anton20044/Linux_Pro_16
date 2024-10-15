@@ -1,0 +1,83 @@
+---
+- name: update
+  apt:
+    update_cache=yes cache_valid_time=3600
+  tags:
+    - web
+
+- name: install pak
+  ansible.builtin.apt:
+    pkg:
+    - nginx
+    - filebeat
+  tags:
+    - web
+
+- name: enable module nginx
+  ansible.builtin.command: filebeat modules enable nginx
+  tags:
+    - web
+
+- name: enable log
+  replace:
+    path: "/etc/filebeat/modules.d/nginx.yml"
+    regexp: 'false'
+    replace: 'enable'
+  tags:
+    - web
+
+- name: set tags
+  replace:
+    path: "/etc/filebeat/filebeat.yml"
+    regexp: '#tags: \["service-X", "web-tier"\]'
+    replace: 'tags: ["web", "nginx"]'
+  tags:
+    - web
+
+- name: set host
+  replace:
+    path: "/etc/filebeat/filebeat.yml"
+    regexp: 'hosts: \["localhost:9200"\]'
+    replace: 'hosts: ["192.168.56.16:9200"]'
+  tags:
+    - web
+
+- name: set logs
+  replace:
+    path: "/etc/filebeat/filebeat.yml"
+    regexp: '- /var/log/\*.log'
+    replace: '- /var/log/nginx/*.log'
+  tags:
+    - web
+
+- name: restart filebeat
+  service:
+    name: filebeat.service
+    state: restarted
+  tags:
+    - web
+
+- name: create file config rsyslog
+  file:
+    path: "/etc/rsyslog.d/all.conf"
+    state: touch
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - web
+
+- name: add param
+  lineinfile:
+    path: "/etc/rsyslog.d/all.conf"
+    line: '*.* @@192.168.56.15:514'
+  tags:
+    - web
+
+- name: restart rsyslog
+  service:
+    name: rsyslog.service
+    state: restarted
+  tags:
+    - web
+

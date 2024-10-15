@@ -1,0 +1,66 @@
+---
+- name: update
+  apt:
+    update_cache=yes cache_valid_time=3600
+  tags:
+    - log
+
+- name: install rsyslog
+  ansible.builtin.apt:
+    pkg:
+    - rsyslog
+  tags:
+    - log
+
+- name: uncommit 1
+  replace:
+    path: "/etc/rsyslog.conf"
+    regexp: '^#module\(load="imudp"\)'
+    replace: 'module(load="imudp")'
+  tags:
+    - log
+
+- name: uncommit 2
+  replace:
+    path: "/etc/rsyslog.conf"
+    regexp: '^#input\(type="imudp" port="514"\)'
+    replace: 'input(type="imudp" port="514")'
+  tags:
+    - log
+
+- name: uncommit 3
+  replace:
+    path: "/etc/rsyslog.conf"
+    regexp: '^#module\(load="imtcp"\)'
+    replace: 'module(load="imtcp")'
+  tags:
+    - log
+
+- name: uncommit 4
+  replace:
+    path: "/etc/rsyslog.conf"
+    regexp: '^#input\(type="imtcp" port="514"\)'
+    replace: 'input(type="imtcp" port="514")'
+  tags:
+    - log
+
+- name: Add remote logs
+  lineinfile:
+    path: "/etc/rsyslog.conf"
+    line: '$template RemoteLogs,"/var/log/rsyslog/%HOSTNAME%/%PROGRAMNAME%.log"'
+  tags:
+    - log
+
+- name: Add remote logs
+  lineinfile:
+    path: "/etc/rsyslog.conf"
+    line: '*.* ?RemoteLogs'
+  tags:
+    - log
+
+- name: Restart rsyslog
+  service:
+    name: rsyslog
+    state: restarted
+  tags:
+    - log
